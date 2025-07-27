@@ -99,17 +99,7 @@ public class ClimberSubsystem extends StateMachine<ClimberState> {
     }
 
     public boolean hasCage(){
-      if (wheelStatorCurrent > Constants.ClimberConstants.cageStallCurrent){
-        hasCage = true;
-        return true;
-      } else {
-        hasCage = false;
-        return false;
-      } 
-    }
-
-    public boolean atGoal() {
-        return true;
+      return wheelStatorCurrent > Constants.ClimberConstants.cageStallCurrent;
     }
 
     public void setClimberPosition(double climberSetpoint) {

@@ -5,5 +5,4 @@ public enum IntakeState {
     INTAKE,
     ROW1,
     ROW2,
-    
 }

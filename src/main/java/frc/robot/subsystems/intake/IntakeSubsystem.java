@@ -122,11 +122,7 @@ public class IntakeSubsystem extends StateMachine<IntakeState> {
   }
 
   public boolean hasCoral(){
-    if (motorStatorCurrent > intakeConstants.stallCurrent){
-      return true;
-    } else {
-      return false;
-    }
+    return motorStatorCurrent > intakeConstants.stallCurrent;
   }
 
   @Override

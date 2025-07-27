@@ -76,9 +76,6 @@ public class RobotManager extends StateMachine<RobotState> {
                 break;
 
             case CLIMBER_DEPLOYED:
-                if (ClimberSpeeds.DEPLOYED == ClimberSpeeds.STATIC_DEPLOYED) {
-                    ClimberSubsystem.getInstance().hasCage();
-                }
                 if (ClimberSubsystem.getInstance().hasCage()) {
                     nextState = RobotState.CLIMBING;
                 }

@@ -112,7 +112,7 @@ public class RobotManager extends StateMachine<RobotState> {
                 break;
             case INTAKING:
                 if (IntakeSubsystem.getInstance().hasCoral()) {
-                    nextState = RobotState.PREPARE_SCORE_ROW2;
+                    nextState = RobotState.PREPARE_IDLE;
                 }
                 break;
         }

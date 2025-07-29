@@ -1,8 +1,4 @@
 package frc.robot.stateMachine;
-
-import com.ctre.phoenix6.mechanisms.swerve.LegacySwerveRequest.Idle;
-
-import frc.robot.subsystems.climber.ClimberSpeeds;
 import frc.robot.subsystems.climber.ClimberState;
 import frc.robot.subsystems.climber.ClimberSubsystem;
 import frc.robot.subsystems.intake.IntakeState;
@@ -128,12 +124,7 @@ public class RobotManager extends StateMachine<RobotState> {
             case PREPARE_IDLE -> {
                 intake.setStateFromRequest(IntakeState.IDLE);
             }
-            case IDLE -> {
-            }
             case CLIMBER_DEPLOYED -> {
-                climber.setStateFromRequest(ClimberState.DEPLOYED);
-            }
-            case CLIMB_WAIT -> {
                 climber.setStateFromRequest(ClimberState.DEPLOYED);
             }
             case CLIMBING -> {
@@ -145,16 +136,10 @@ public class RobotManager extends StateMachine<RobotState> {
             case PREPARE_SCORE_ROW1 -> {
                 intake.setStateFromRequest(IntakeState.ROW1);
             }
-            case WAIT_SCORE_ROW1 -> {
-                intake.setStateFromRequest(IntakeState.ROW1);
-            }
             case SCORE_ROW1 -> {
                 intake.setStateFromRequest(IntakeState.ROW1);
             }
             case PREPARE_SCORE_ROW2 -> {
-                intake.setStateFromRequest(IntakeState.ROW2);
-            }
-            case WAIT_SCORE_ROW2 -> {
                 intake.setStateFromRequest(IntakeState.ROW2);
             }
             case SCORE_ROW2 -> {
@@ -166,6 +151,11 @@ public class RobotManager extends StateMachine<RobotState> {
             case INTAKING -> {
                 intake.setStateFromRequest(IntakeState.INTAKE);
             }
+            case IDLE,
+                    WAIT_SCORE_ROW1,
+                    WAIT_SCORE_ROW2 ->
+                {
+                }
         }
     }
 
@@ -193,6 +183,7 @@ public class RobotManager extends StateMachine<RobotState> {
     public void row2Request() {
         flags.check(RobotFlag.ROW2);
     }
+
     public void idleRequest() {
         flags.check(RobotFlag.IDLE);
     }

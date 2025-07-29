@@ -4,7 +4,6 @@ public enum RobotState {
     PREPARE_IDLE,
     IDLE,
     CLIMBER_DEPLOYED,
-    CLIMB_WAIT,
     CLIMBING,
     CLIMBED,
     PREPARE_SCORE_ROW1,
@@ -15,6 +14,5 @@ public enum RobotState {
     SCORE_ROW2,
     PREPARE_INTAKE,
     INTAKING,
-    
-    
+
 }

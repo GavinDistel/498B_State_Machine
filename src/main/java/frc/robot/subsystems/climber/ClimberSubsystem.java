@@ -90,16 +90,16 @@ public class ClimberSubsystem extends StateMachine<ClimberState> {
         wheelMotor.set(speed);
     }
 
-       @Override
-    public void collectInputs(){
-      //climberWheelSpeed = climberWheelMotor.get();
-      wheelStatorCurrent = wheelMotor.getStatorCurrent().getValueAsDouble();
-      DogLog.log(getName() + "/Climber wheel motor stator Current", wheelStatorCurrent);
-      //DogLog.log(getName() + "/Climber wheel motor speed", climberWheelSpeed);
+    @Override
+    public void collectInputs() {
+        // climberWheelSpeed = climberWheelMotor.get();
+        wheelStatorCurrent = wheelMotor.getStatorCurrent().getValueAsDouble();
+        DogLog.log(getName() + "/Climber wheel motor stator Current", wheelStatorCurrent);
+        // DogLog.log(getName() + "/Climber wheel motor speed", climberWheelSpeed);
     }
 
-    public boolean hasCage(){
-      return wheelStatorCurrent > Constants.ClimberConstants.cageStallCurrent;
+    public boolean hasCage() {
+        return wheelStatorCurrent > Constants.ClimberConstants.cageStallCurrent;
     }
 
     public void setClimberPosition(double climberSetpoint) {

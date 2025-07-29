@@ -1,104 +1,179 @@
-// Copyright (c) FIRST and other WPILib contributors.
-// Open Source Software; you can modify and/or share it under the terms of
-// the WPILib BSD license file in the root directory of this project.
-
 package frc.robot;
 
+import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.DriverStation.Alliance;
+import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj.TimedRobot;
+import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.CommandScheduler;
+import frc.robot.commands.RobotCommands;
+import frc.robot.stateMachine.RobotManager;
+import frc.robot.stateMachine.RobotState;
+import frc.robot.subsystems.drivetrain.CommandSwerveDrivetrain;
+import frc.robot.subsystems.intake.IntakeSubsystem;
 
-/**
- * The methods in this class are called automatically corresponding to each mode, as described in
- * the TimedRobot documentation. If you change the name of this class or the package after creating
- * this project, you must also update the Main.java file in the project.
- */
+import java.util.Optional;
+import com.pathplanner.lib.auto.AutoBuilder;
+import com.pathplanner.lib.auto.NamedCommands;
+import com.pathplanner.lib.commands.PathPlannerAuto;
+
 public class Robot extends TimedRobot {
-  private static final String kDefaultAuto = "Default";
-  private static final String kCustomAuto = "My Auto";
-  private String m_autoSelected;
-  private final SendableChooser<String> m_chooser = new SendableChooser<>();
+  // public static final double DEFAULT_PERIOD = 0.02;
+  // public final Timer setupTimer = new Timer();
+  // public double setupTime = 0;
 
-  /**
-   * This function is run when the robot is first started up and should be used for any
-   * initialization code.
-   */
-  public Robot() {
-    m_chooser.setDefaultOption("Default Auto", kDefaultAuto);
-    m_chooser.addOption("My Auto", kCustomAuto);
-    SmartDashboard.putData("Auto choices", m_chooser);
+  public static RobotManager robotManager = new RobotManager();
+  public static RobotCommands robotCommands = new RobotCommands(robotManager);
+  // public static int coordinateFlip = 1;
+  // public static int rotationOffset = 0;
+
+  public static Optional<Alliance> alliance = Optional.empty();
+  public static final Controls controls = new Controls();
+
+  private SendableChooser<Command> autoChooser;
+  private SendableChooser<Command> newAutoChooser;
+
+  @Override
+  public void robotInit() {
+    controls.configureDefaultCommands();
+    controls.configureDriverCommands();
+    controls.configureOperatorCommands();
+
+    NamedCommands.registerCommand("score", robotCommands.scoreCommand());
+    NamedCommands.registerCommand("intake", robotCommands.intakeCommand());
+    NamedCommands.registerCommand("return to idle", robotCommands.idleCommand());
+    CommandSwerveDrivetrain.getInstance();
+
+    // newAutoChooser = AutoBuilder.buildAutoChooser("1CoralBlindMiddle");
+    newAutoChooser = new SendableChooser<Command>();
+    newAutoChooser.addOption("1CoralBlindMiddle", new PathPlannerAuto("1CoralBlindMiddle"));
+    // newAutoChooser = AutoBuilder.buildAutoChooser("1CoralBlindMiddle");
+    newAutoChooser.addOption("processor 2.5 coral", new PathPlannerAuto("2.5 Coral Blind Processor Side"));
+    newAutoChooser.addOption("non-processor 2.5 coral", new PathPlannerAuto("2.5 Coral Blind Non-Processor Side"));
+
+    autoChooser = AutoBuilder.buildAutoChooser();
+
+    // Limelight.getInstance();
+
   }
 
-  /**
-   * This function is called every 20 ms, no matter the mode. Use this for items like diagnostics
-   * that you want ran during disabled, autonomous, teleoperated and test.
-   *
-   * <p>This runs after the mode specific periodic functions, but before LiveWindow and
-   * SmartDashboard integrated updating.
-   */
   @Override
-  public void robotPeriodic() {}
-
-  /**
-   * This autonomous (along with the chooser code above) shows how to select between different
-   * autonomous modes using the dashboard. The sendable chooser code works with the Java
-   * SmartDashboard. If you prefer the LabVIEW Dashboard, remove all of the chooser code and
-   * uncomment the getString line to get the auto name from the text box below the Gyro
-   *
-   * <p>You can add additional auto modes by adding additional comparisons to the switch structure
-   * below with additional strings. If using the SendableChooser make sure to add them to the
-   * chooser code above as well.
-   */
-  @Override
-  public void autonomousInit() {
-    m_autoSelected = m_chooser.getSelected();
-    // m_autoSelected = SmartDashboard.getString("Auto Selector", kDefaultAuto);
-    System.out.println("Auto selected: " + m_autoSelected);
-  }
-
-  /** This function is called periodically during autonomous. */
-  @Override
-  public void autonomousPeriodic() {
-    switch (m_autoSelected) {
-      case kCustomAuto:
-        // Put custom auto code here
-        break;
-      case kDefaultAuto:
-      default:
-        // Put default auto code here
-        break;
+  public void robotPeriodic() {
+    CommandScheduler.getInstance().run();
+    SmartDashboard.putData(autoChooser);
+    SmartDashboard.putData(newAutoChooser);
+    if (alliance.isEmpty()) {
+      alliance = DriverStation.getAlliance();
     }
   }
 
-  /** This function is called once when teleop is enabled. */
   @Override
-  public void teleopInit() {}
+  public void disabledPeriodic() {
+    alliance = DriverStation.getAlliance();
+  }
 
-  /** This function is called periodically during operator control. */
   @Override
-  public void teleopPeriodic() {}
+  public void teleopInit() {
 
-  /** This function is called once when the robot is disabled. */
-  @Override
-  public void disabledInit() {}
+  }
 
-  /** This function is called periodically when disabled. */
   @Override
-  public void disabledPeriodic() {}
+  public void teleopPeriodic() {
+  }
 
-  /** This function is called once when test mode is enabled. */
   @Override
-  public void testInit() {}
+  public void teleopExit() {
+    controls.driver.rumble(0);
+  }
 
-  /** This function is called periodically during test mode. */
   @Override
-  public void testPeriodic() {}
+  public void disabledInit() {
+    // setupTimer.restart();
+    // drivetrain.enableBrakeMode(false);
+  }
 
-  /** This function is called once when the robot is first started up. */
-  @Override
-  public void simulationInit() {}
+  Timer timer = new Timer();
+  boolean hasFired;
 
-  /** This function is called periodically whilst in simulation. */
   @Override
-  public void simulationPeriodic() {}
+  public void autonomousInit() {
+    timer.start();
+    // new FullScore().schedule();
+    // drivetrain.enableBrakeMode(true);
+    // matchStarted = true;
+    IntakeSubsystem.getInstance();
+    hasFired = false;
+
+    // if (autoToRun == null)
+    // autoToRun = defaultAuto;
+    autoChooser.getSelected().schedule();
+    // if(newAutoChooser.getSelected() != null){
+    // newAutoChooser.getSelected().schedule();
+    // }
+    // autoToRun = new HighHighCone();
+
+    // if (alliance.get() == Alliance.Blue) {
+    // CommandSwerveDrivetrain.getInstance().(autoToRun.getInitialPose().getRotation().getDegrees());
+    // Drivetrain.getInstance().setPose(autoToRun.getInitialPose());
+    // } else {
+    // Drivetrain.getInstance().setYaw(PoseUtil.flipAngleDegrees(autoToRun.getInitialPose().getRotation().getDegrees()));
+    // Drivetrain.getInstance().setPose(PoseUtil.flip(autoToRun.getInitialPose()));
+    // }
+    // SmartDashboard.putData((Sendable) autoToRun.getInitialPose());
+
+    // autoToRun.getCommand().schedule();
+    // new LongTaxi().getCommand().schedule();
+
+    // CommandScheduler.getInstance().run();
+
+    // if (alliance.get() == Alliance.Blue) {
+    // Drivetrain.getInstance().setYaw(autoToRun.getInitialPose().getRotation().getDegrees());
+    // Drivetrain.getInstance().setPose(autoToRun.getInitialPose());
+    // } else {
+    // Drivetrain.getInstance().setYaw(PoseUtil.flip(autoToRun.getInitialPose()).getRotation().getDegrees());
+    // Drivetrain.getInstance().setPose(PoseUtil.flip(autoToRun.getInitialPose()));
+    // }
+    // Sets the LEDs to a pattern for auto, this could be edited to include code for
+    // if vision is aligned for auto diagnosis
+  }
+
+  @Override
+  public void autonomousPeriodic() {
+    // System.out.println(timer.get());
+    // if(timer.get() > 5 && timer.get() < 7){
+    // if(!hasFired){
+    // IntakeWristSubsystem.getInstance().setIntakePosition(.15);
+    // // robotCommands.L1Row1Command();
+    // IntakeRollersSubsystem.getInstance().setIntakeRollerSpeeds(.2);
+    // hasFired = true;
+    // }
+    // }else if(timer.get() > 7){
+    // if(hasFired){
+    // // robotCommands.idleCommand();
+    // IntakeWristSubsystem.getInstance().setIntakePosition(.15);
+    // // robotCommands.L1Row1Command();
+    // IntakeRollersSubsystem.getInstance().setIntakeRollerSpeeds(0);
+    // hasFired = false;
+    // CommandScheduler.getInstance().cancelAll();;
+    // }
+    // }else if(timer.get() > 9){
+    // if(!hasFired){
+    // CommandScheduler.getInstance().run();
+    // hasFired = true;
+    // }
+    // }
+
+  }
+
+  @Override
+  public void testInit() {
+    CommandScheduler.getInstance().cancelAll();
+  }
+
+  public static void main(String... args) {
+    RobotBase.startRobot(Robot::new);
+  }
 }
